@@ -1,0 +1,59 @@
+//all ratings count
+db.movies.count();
+
+db.movies.find().pretty()
+
+//ratings of a particular movie
+db.movies.find({"movieID":234}).pretty();
+
+
+//mapReduce
+var mapFn=function(){
+		emit(this.movieID,this.rating);
+}
+
+var reduceFn=function(key,values){
+	return Array.avg(values);
+}
+
+db.movies.mapReduce(mapFn,reduceFn,{out:"Averages"})
+
+//from averages collection
+
+db.Averages.count();
+
+db.Averages.find().pretty();
+
+db.Averages.find().sort({value : -1}).limit(10);		//sort and give highest 10 average ratings
+db.Averages.find().sort({value : 1}).limit(10);		   //sort and give lowest 10 average ratings
+
+db.Averages.find({"_id":689}).pretty();
+
+db.Averages.find({"value":{"$gt":3,"$lt":4}});
+
+
+
+////////////////
+
+
+sudo mongoimport -d moviesDB -c mapreduce --type tsv --file u.data --headerline
+	OR
+sudo mongoimport -d moviesDB -c mapreduce --type tsv --file u.data --fields	
+// in mongo shell
+use moviesDB
+db.mapreduce.count()
+
+db.mapreduce.mapReduce(
+	function() {
+		emit(this.movieID , this.rating);
+	},
+
+	function(key , values){
+		return Array.avg(values);
+	},
+
+	{out : "Averages"}
+).find();
+
+
+
